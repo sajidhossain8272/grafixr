@@ -37,7 +37,7 @@ export default function Home() {
   }, [controls]);
 
   return (
-    <div className='min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white'>
+    <div className='min-h-screen bg-white  text-gray-900 '>
       {/* Hero Section */}
       <section className='h-screen flex flex-col justify-center items-center text-center px-4 relative overflow-hidden'>
         {/* Colorful Hover Effect */}
@@ -48,15 +48,15 @@ export default function Home() {
           initial={{ opacity: 0, y: -50 }}
           animate={controls}
           transition={{ duration: 1 }}
-          className='text-6xl font-bold mb-4 text-gray-900 dark:text-white relative z-10'
+          className='text-6xl font-bold mb-4   relative z-10'
         >
-          We Create <span className='text-gray-950 dark:text-gray-50'>Digital Experiences</span>
+          We Create <span className='text-gray-950 '>Digital Experiences</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 50 }}
           animate={controls}
           transition={{ duration: 1, delay: 0.5 }}
-          className='text-xl mb-8 text-gray-900 dark:text-white relative z-10'
+          className='text-xl mb-8 text-gray-900  relative z-10'
         >
           Transforming ideas into stunning realities.
         </motion.p>
@@ -68,7 +68,7 @@ export default function Home() {
         >
           <Link
             href='/portfolio'
-            className='bg-gray-900 dark:bg-gray-200 text-white dark:text-black font-bold px-6 py-3 rounded-lg dark:hover:bg-gray-50 hover:bg-gray-800 transition-colors'
+            className='bg-gray-900  text-white  font-bold px-6 py-3 rounded-lg  hover:bg-gray-800 transition-colors'
           >
             View Our Work
           </Link>
@@ -86,7 +86,7 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: index * 0.2 }}
               viewport={{ once: true }}
-              className='flex-shrink-0 w-80 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden'
+              className='flex-shrink-0 w-80 bg-gray-100  rounded-lg overflow-hidden'
             >
               <div className='relative w-full h-48'>
                 <Image
@@ -100,7 +100,7 @@ export default function Home() {
               </div>
               <div className='p-4'>
                 <h3 className='text-xl font-bold'>{work.title}</h3>
-                <p className='text-gray-600 dark:text-gray-400'>
+                <p className='text-gray-600 '>
                   {work.description}
                 </p>
               </div>
