@@ -24,7 +24,7 @@ const ColorfulBackgroundEffect = () => {
     const y = radius * Math.sin(phi) * Math.sin(theta);
     const z = radius * Math.cos(phi);
 
-    positions[i * 2 + 0] = x;
+    positions[i * 3 + 0] = x;
     positions[i * 3 + 1] = y;
     positions[i * 3 + 2] = z;
 
@@ -58,7 +58,7 @@ const ColorfulBackgroundEffect = () => {
       <PointMaterial
         vertexColors
         transparent
-        size={0.015}
+        size={0.01}
         sizeAttenuation
         depthWrite={false}
       />
