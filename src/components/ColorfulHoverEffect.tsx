@@ -47,7 +47,8 @@ const ColorfulBackgroundEffect = () => {
   });
 
   return (
-    <Points
+    <>
+    <Points 
       ref={pointsRef}
       positions={positions}
       colors={colors}
@@ -63,6 +64,7 @@ const ColorfulBackgroundEffect = () => {
         depthWrite={false}
       />
     </Points>
+    </>
   );
 };
 

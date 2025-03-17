@@ -37,9 +37,9 @@ export default function Home() {
   }, [controls]);
 
   return (
-    <div className='min-h-screen bg-white  text-gray-900 '>
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Hero Section */}
-      <section className='h-screen flex flex-col justify-center items-center text-center px-4 relative overflow-hidden'>
+      <section className="lg:h-[450px] h-[400px] flex flex-col justify-center items-center text-center px-4 relative overflow-hidden">
         {/* Colorful Hover Effect */}
         <ColorfulScene />
 
@@ -48,15 +48,15 @@ export default function Home() {
           initial={{ opacity: 0, y: -50 }}
           animate={controls}
           transition={{ duration: 1 }}
-          className='text-6xl font-bold mb-4   relative z-10'
+          className="text-6xl font-bold mb-4 relative z-10"
         >
-          We Create <span className='text-gray-950 '>Digital Experiences</span>
+          We Create <span className="text-gray-950">Digital Experiences</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 50 }}
           animate={controls}
           transition={{ duration: 1, delay: 0.5 }}
-          className='text-xl mb-8 text-gray-900  relative z-10'
+          className="text-xl mb-8 text-gray-900 relative z-10"
         >
           Transforming ideas into stunning realities.
         </motion.p>
@@ -64,45 +64,44 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={controls}
           transition={{ duration: 1, delay: 1 }}
-          className='relative z-10'
+          className="relative z-10"
         >
           <Link
-            href='/portfolio'
-            className='bg-gray-900  text-white  font-bold px-6 py-3 rounded-lg  hover:bg-gray-800 transition-colors'
+            href="/portfolio"
+            className="bg-gray-900 text-white font-bold px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
           >
             View Our Work
           </Link>
         </motion.div>
       </section>
 
-      {/* Featured Work Carousel */}
-      <section className='py-16 px-4'>
-        <h2 className='text-4xl font-bold text-center mb-8'>Featured Work</h2>
-        <div className='flex overflow-hidden space-x-4 max-w-4xl mx-auto'>
+      {/* Featured Work Section */}
+      <section className="py-16 px-4">
+        <h2 className="text-4xl font-bold text-center mb-8">Featured Work</h2>
+        {/* Responsive grid layout for featured items */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {featuredWork.map((work, index) => (
             <motion.div
               key={work.id}
-              initial={{ opacity: 0, x: index % 2 === 0 ? 100 : -100 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: index * 0.2 }}
               viewport={{ once: true }}
-              className='flex-shrink-0 w-80 bg-gray-100  rounded-lg overflow-hidden'
+              className="bg-gray-100 rounded-lg overflow-hidden shadow"
             >
-              <div className='relative w-full h-48'>
+              <div className="relative w-full h-48">
                 <Image
                   src={work.image}
                   alt={work.title}
                   fill
-                  className='object-cover'
-                  sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   priority={index === 0} // Prioritize the first image for LCP
                 />
               </div>
-              <div className='p-4'>
-                <h3 className='text-xl font-bold'>{work.title}</h3>
-                <p className='text-gray-600 '>
-                  {work.description}
-                </p>
+              <div className="p-4">
+                <h3 className="text-xl font-bold">{work.title}</h3>
+                <p className="text-gray-600">{work.description}</p>
               </div>
             </motion.div>
           ))}
