@@ -20,6 +20,7 @@ import {
   FaUser,
   FaCloud,
   FaRobot,
+  FaVideo, // New icon for video editing
 } from "react-icons/fa";
 
 export default function Navigation() {
@@ -27,6 +28,7 @@ export default function Navigation() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isGraphicOpen, setIsGraphicOpen] = useState(false);
+  const [isVideoEditingOpen, setIsVideoEditingOpen] = useState(false);
   const [isWebDevOpen, setIsWebDevOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -34,13 +36,16 @@ export default function Navigation() {
     // Reset dropdown states when closing the mobile menu
     if (isMenuOpen) {
       setIsGraphicOpen(false);
+      setIsVideoEditingOpen(false);
       setIsWebDevOpen(false);
     }
   };
 
   // Helper to highlight the active link
   const isActive = (path: string) => {
-    return pathname === path ? "text-white bg-gray-800 hover:text-white p-2 rounded-lg font-semibold "  : "";
+    return pathname === path
+      ? "text-white bg-gray-800 hover:text-white p-2 rounded-lg font-semibold "
+      : "";
   };
 
   return (
@@ -64,7 +69,7 @@ export default function Navigation() {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex space-x-8 items-center font-bold">
-            <Link
+              <Link
                 href="/"
                 className={`text-gray-900 hover:text-gray-700 transition-colors duration-300 hover:scale-105 ${isActive(
                   "/"
@@ -185,6 +190,66 @@ export default function Navigation() {
                         )}`}
                       >
                         <FaImage className="w-5 h-5" /> Image Editing
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Video Editing Dropdown */}
+              <div className="relative group">
+                <button
+                  className={`glow-effect flex items-center gap-1 text-gray-900 hover:text-gray-50 focus:outline-none transition-colors duration-300 ${
+                    pathname.startsWith("/services/video-editing")
+                      ? "text-blue-600 font-semibold"
+                      : ""
+                  }`}
+                >
+                  Video Editing
+                  <svg
+                    className="h-4 w-4 transition-transform duration-300 group-hover:rotate-180"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+                <div className="absolute left-0 mt-2 w-max bg-white border border-gray-200 rounded-md shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                  <ul className="p-2 grid grid-cols-1 gap-2">
+                    <li>
+                      <Link
+                        href="/services/video-editing/long-form"
+                        className={`flex items-center gap-2 px-2 py-1 hover:bg-gray-100 transition-colors duration-300 ${isActive(
+                          "/services/video-editing/long-form"
+                        )}`}
+                      >
+                        <FaVideo className="w-5 h-5" /> Long-Form Video Editing
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/services/video-editing/short-form"
+                        className={`flex items-center gap-2 px-2 py-1 hover:bg-gray-100 transition-colors duration-300 ${isActive(
+                          "/services/video-editing/short-form"
+                        )}`}
+                      >
+                        <FaVideo className="w-5 h-5" /> Short-Form Video Editing
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/services/video-editing/promotional"
+                        className={`flex items-center gap-2 px-2 py-1 hover:bg-gray-100 transition-colors duration-300 ${isActive(
+                          "/services/video-editing/promotional"
+                        )}`}
+                      >
+                        <FaVideo className="w-5 h-5" /> Promotional/Corporate Video Editing
                       </Link>
                     </li>
                   </ul>
@@ -434,6 +499,79 @@ export default function Navigation() {
                       onClick={toggleMenu}
                     >
                       <FaImage className="w-6 h-6" /> Image Editing
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </div>
+
+            {/* Mobile Video Editing Dropdown */}
+            <div className="w-full">
+              <button
+                onClick={() => setIsVideoEditingOpen(!isVideoEditingOpen)}
+                className={`glow-effect w-full flex items-center justify-between text-2xl font-bold hover:text-gray-300 px-4 py-2 focus:outline-none ${
+                  pathname.startsWith("/services/video-editing")
+                    ? "text-blue-600"
+                    : ""
+                }`}
+              >
+                Video Editing
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  {isVideoEditingOpen ? (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  ) : (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  )}
+                </svg>
+              </button>
+              {isVideoEditingOpen && (
+                <ul className="mt-4 space-y-4 pl-8 text-xl">
+                  <li>
+                    <Link
+                      href="/services/video-editing/long-form"
+                      className={`flex items-center gap-3 hover:text-gray-300 transition-colors duration-300 ${isActive(
+                        "/services/video-editing/long-form"
+                      )}`}
+                      onClick={toggleMenu}
+                    >
+                      <FaVideo className="w-6 h-6" /> Long-Form Video Editing
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/services/video-editing/short-form"
+                      className={`flex items-center gap-3 hover:text-gray-300 transition-colors duration-300 ${isActive(
+                        "/services/video-editing/short-form"
+                      )}`}
+                      onClick={toggleMenu}
+                    >
+                      <FaVideo className="w-6 h-6" /> Short-Form Video Editing
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/services/video-editing/promotional"
+                      className={`flex items-center gap-3 hover:text-gray-300 transition-colors duration-300 ${isActive(
+                        "/services/video-editing/promotional"
+                      )}`}
+                      onClick={toggleMenu}
+                    >
+                      <FaVideo className="w-6 h-6" /> Promotional/Corporate Video Editing
                     </Link>
                   </li>
                 </ul>
