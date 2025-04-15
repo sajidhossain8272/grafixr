@@ -90,6 +90,15 @@ export default function Navigation() {
               >
                 About Us
               </Link>
+              <Link
+                href='/portfolio'
+                className={`text-gray-900 transition-colors duration-300 hover:scale-105 ${isActive(
+                  "/portfolio"
+                )}`}
+              >
+                Portfolio
+              </Link>
+              
               {categories.map((cat) => (
                 <div
                   key={cat._id}
@@ -148,14 +157,7 @@ export default function Navigation() {
               >
                 Contact Us
               </Link>
-              <Link
-                href='/portfolio'
-                className={`text-gray-900 transition-colors duration-300 hover:scale-105 ${isActive(
-                  "/portfolio"
-                )}`}
-              >
-                Portfolio
-              </Link>
+        
             </div>
 
             {/* Mobile Menu Button */}
@@ -177,7 +179,7 @@ export default function Navigation() {
 
       {/* Mobile Menu – Fullscreen Overlay */}
       {isMenuOpen && (
-        <div className='md:hidden fixed inset-0 bg-gradient-to-br from-gray-900 to-black text-white z-20 overflow-auto p-4'>
+        <div className='md:hidden fixed inset-0 bg-gradient-to-br from-gray-900 to-black text-white z-20 overflow-auto p-4 pt-20' >
           <Link
             href='/about'
             className={`block text-2xl font-bold hover:text-gray-300 mb-4 ${isActive(
@@ -186,6 +188,15 @@ export default function Navigation() {
             onClick={toggleMenu}
           >
             About Us
+          </Link>
+          <Link
+            href='/portfolio'
+            className={`block text-2xl font-bold hover:text-gray-300 mt-4 ${isActive(
+              "/portfolio"
+            )}`}
+            onClick={toggleMenu}
+          >
+            Portfolio
           </Link>
           {categories.map((cat) => (
             <div key={cat._id} className='mb-4'>
@@ -217,15 +228,7 @@ export default function Navigation() {
           >
             Contact Us
           </Link>
-          <Link
-            href='/portfolio'
-            className={`block text-2xl font-bold hover:text-gray-300 mt-4 ${isActive(
-              "/portfolio"
-            )}`}
-            onClick={toggleMenu}
-          >
-            Portfolio
-          </Link>
+    
         </div>
       )}
     </>

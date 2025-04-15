@@ -1,90 +1,46 @@
 "use client";
-
 import React from "react";
-import Image from "next/image";
+import { FaRegEnvelope } from "react-icons/fa";
 
-const Page: React.FC = () => {
+const AboutUs: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-16">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900">About Us</h1>
-          <p className="mt-4 text-xl text-gray-700">
-            We are a dynamic design agency dedicated to creating exceptional digital experiences.
+      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8">
+        {/* Header with Icon */}
+        <div className="flex items-center justify-center mb-8">
+          <FaRegEnvelope className="text-4xl text-gray-600 mr-3" />
+          <h1 className="text-4xl font-bold text-gray-900">A Letter from Our Founder</h1>
+        </div>
+
+        {/* Letter Content */}
+        <div className="space-y-6 font-serif text-lg text-gray-800 leading-relaxed">
+          <p>Dear Valued Clients,</p>
+
+          <p>
+            I am deeply honored to share our journey and vision with you. My name is Rony, and my story began seven years ago when I started as an individual freelance graphics designer. With little more than a passion for creativity and a burning desire to help brands communicate their unique stories, I embarked on a journey that would eventually transform both my life and the way businesses experience design.
+          </p>
+
+          <p>
+            In those early days, every project was a learning opportunity and every challenge fueled my determination. As my client base grew, I found that my vision resonated with those who believed in the power of exceptional design. This trust and support motivated me to expand and invest in a creative approach that focused on turning every idea into a striking visual narrative.
+          </p>
+
+          <p>
+            Today, I am proud to say that what began as a solo venture has blossomed into a dynamic team of 15-20 dedicated professionals. Together, we combine our diverse skills and relentless passion to create visual experiences that not only captivate but also drive real results for brands around the globe.
+          </p>
+
+          <p>
+            Thank you for being an integral part of our journey. We are committed to pushing creative boundaries and delivering design excellence in every project. Your belief in our vision inspires us to keep innovating and to continue telling stories through design.
           </p>
         </div>
 
-        {/* Our Story */}
-        {/* <section className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Story</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Founded in [Year], our journey began with a small team of passionate creatives and developers determined to transform ideas into stunning realities.
-            Over the years, we have evolved into an industry-leading agency by merging design with technology to deliver innovative digital solutions.
-          </p>
-        </section> */}
-
-        {/* Mission & Vision */}
-        {/* <section className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Mission</h2>
-            <p className="text-gray-700 leading-relaxed">
-              Our mission is to empower businesses by delivering captivating digital experiences that drive engagement and growth.
-              We combine creativity with cutting-edge technology to craft solutions that truly make an impact.
-            </p>
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Vision</h2>
-            <p className="text-gray-700 leading-relaxed">
-              We envision a world where every digital interaction is a delightful experience.
-              Our vision is to be at the forefront of design innovation—creating products and experiences that resonate deeply with users.
-            </p>
-          </div>
-        </section> */}
-
-        {/* Our Team */}
-        <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Team</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {/* Team Member Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <Image
-                src="https://via.placeholder.com/150"
-                alt="Alice Johnson"
-                width={150}
-                height={150}
-                className="mx-auto rounded-full"
-              />
-              <h3 className="mt-4 text-xl font-bold text-gray-900">Alice Johnson</h3>
-              <p className="text-gray-600">Creative Director</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <Image
-                src="https://via.placeholder.com/150"
-                alt="Bob Smith"
-                width={150}
-                height={150}
-                className="mx-auto rounded-full"
-              />
-              <h3 className="mt-4 text-xl font-bold text-gray-900">Bob Smith</h3>
-              <p className="text-gray-600">Lead Developer</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <Image
-                src="https://via.placeholder.com/150"
-                alt="Carol Davis"
-                width={150}
-                height={150}
-                className="mx-auto rounded-full"
-              />
-              <h3 className="mt-4 text-xl font-bold text-gray-900">Carol Davis</h3>
-              <p className="text-gray-600">UX/UI Designer</p>
-            </div>
-          </div>
-        </section>
+        {/* Signature */}
+        <div className="mt-10 text-right">
+          <p className="font-bold text-xl">Sincerely,</p>
+          <p className="mt-2 text-2xl font-extrabold text-gray-900">Rony</p>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Page;
+export default AboutUs;
