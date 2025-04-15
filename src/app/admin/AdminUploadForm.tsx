@@ -1,7 +1,6 @@
 "use client";
 import React, { ChangeEvent, FormEvent } from "react";
 
-// Defines the shape of category mapping
 interface CategoriesMap {
   [key: string]: string[];
 }
@@ -16,9 +15,7 @@ interface AdminUploadFormProps {
   loading: boolean;
   error: string;
   success: string;
-  // Dynamic categories mapping
   categoriesMap: CategoriesMap;
-  // Event handlers
   handleTitleChange: (value: string) => void;
   handleDescriptionChange: (value: string) => void;
   handleMainCategoryChange: (value: string) => void;
@@ -49,12 +46,13 @@ export default function AdminUploadForm(props: AdminUploadFormProps) {
     handleSubmit,
   } = props;
 
-  // For subcategory options, use dynamic data if available; otherwise an empty array
   const subCategoryOptions = categoriesMap[mainCategory] || [];
 
   return (
     <div className="bg-white shadow-md rounded-md p-6 mb-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">Upload Portfolio Item</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">
+        Upload Portfolio Item
+      </h1>
 
       {error && <div className="mb-4 text-red-500 font-medium">{error}</div>}
       {success && <div className="mb-4 text-green-500 font-medium">{success}</div>}
