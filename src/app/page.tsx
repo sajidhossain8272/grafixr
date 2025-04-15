@@ -4,7 +4,9 @@ import { motion, useAnimation } from 'framer-motion';
 import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import ColorfulScene from '@/components/ColorfulHoverEffect'; // Import the ColorfulHoverEffect component
+import ColorfulScene from '@/components/ColorfulHoverEffect'; 
+import Footer from './Footer';
+// Import the ColorfulHoverEffect component
 
 // Dummy data for featured work
 const featuredWork = [
@@ -107,6 +109,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+        {/* Footer Section */}  
+       <Footer /> 
+    
     </div>
   );
 }
