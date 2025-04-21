@@ -1,8 +1,34 @@
-import type { NextConfig } from "next";
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
 
-const nextConfig: NextConfig = {
+  // Allow next/image to optimize from Pexels
   images: {
-    domains: ['images.pexels.com', 'https://via.placeholder.com', 'https://via.placeholder.com/150', 'via.placeholder.com'], // Add the external domain here
-  },};
+    domains: ['images.pexels.com'],
+    // —OR— for path‑level control:
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        port: '',
+        pathname: '/photos/**',
+      },
+    ],
+  },
 
-export default nextConfig;
+  // Proxy /api/* to your backend
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination:
+          process.env.NODE_ENV === 'production'
+            ? `${process.env.NEXT_PUBLIC_API_URL}/:path*`
+            : 'http://localhost:5000/:path*',
+      },
+    ];
+  },
+};
+
+module.exports = nextConfig;

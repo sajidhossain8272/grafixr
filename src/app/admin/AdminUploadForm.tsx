@@ -1,11 +1,8 @@
 "use client";
+
 import React, { ChangeEvent, FormEvent } from "react";
 
-interface CategoriesMap {
-  [key: string]: string[];
-}
-
-interface AdminUploadFormProps {
+interface Props {
   title: string;
   description: string;
   mainCategory: string;
@@ -15,195 +12,149 @@ interface AdminUploadFormProps {
   loading: boolean;
   error: string;
   success: string;
-  categoriesMap: CategoriesMap;
-  handleTitleChange: (value: string) => void;
-  handleDescriptionChange: (value: string) => void;
-  handleMainCategoryChange: (value: string) => void;
-  handleSubCategoryChange: (value: string) => void;
-  handleMediaTypeChange: (value: "image" | "video") => void;
+  categoriesMap: Record<string, string[]>;
+  handleTitleChange: (val: string) => void;
+  handleDescriptionChange: (val: string) => void;
+  handleMainCategoryChange: (val: string) => void;
+  handleSubCategoryChange: (val: string) => void;
+  handleMediaTypeChange: (val: "image" | "video") => void;
   handleFileChange: (e: ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
 }
 
-export default function AdminUploadForm(props: AdminUploadFormProps) {
-  const {
-    title,
-    description,
-    mainCategory,
-    subCategory,
-    mediaType,
-    previewUrls,
-    loading,
-    error,
-    success,
-    categoriesMap,
-    handleTitleChange,
-    handleDescriptionChange,
-    handleMainCategoryChange,
-    handleSubCategoryChange,
-    handleMediaTypeChange,
-    handleFileChange,
-    handleSubmit,
-  } = props;
-
-  const subCategoryOptions = categoriesMap[mainCategory] || [];
+export default function AdminUploadForm({
+  title,
+  description,
+  mainCategory,
+  subCategory,
+  mediaType,
+  previewUrls,
+  loading,
+  error,
+  success,
+  categoriesMap,
+  handleTitleChange,
+  handleDescriptionChange,
+  handleMainCategoryChange,
+  handleSubCategoryChange,
+  handleMediaTypeChange,
+  handleFileChange,
+  handleSubmit,
+}: Props) {
+  const mains = Object.keys(categoriesMap);
+  const subs = categoriesMap[mainCategory] || [];
 
   return (
-    <div className="bg-white shadow-md rounded-md p-6 mb-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">
-        Upload Portfolio Item
-      </h1>
+    <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow-md">
+      <h2 className="text-xl font-bold mb-4">Upload Portfolio Item</h2>
 
-      {error && <div className="mb-4 text-red-500 font-medium">{error}</div>}
-      {success && <div className="mb-4 text-green-500 font-medium">{success}</div>}
+      {/* Title */}
+      <div className="mb-2">
+        <label className="block font-semibold">Title:</label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          className="border p-1 w-full"
+          required
+        />
+      </div>
 
-      <form onSubmit={handleSubmit}>
-        {/* Title */}
-        <div className="mb-4">
-          <label htmlFor="title" className="block text-gray-700 font-medium mb-2">
-            Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded-md"
-            placeholder="Enter title"
-            required
-          />
-        </div>
+      {/* Description */}
+      <div className="mb-2">
+        <label className="block font-semibold">Description:</label>
+        <textarea
+          value={description}
+          onChange={(e) => handleDescriptionChange(e.target.value)}
+          className="border p-1 w-full"
+        />
+      </div>
 
-        {/* Description */}
-        <div className="mb-4">
-          <label htmlFor="description" className="block text-gray-700 font-medium mb-2">
-            Description
-          </label>
-          <textarea
-            id="description"
-            rows={3}
-            value={description}
-            onChange={(e) => handleDescriptionChange(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded-md"
-            placeholder="Enter a brief description"
-          />
-        </div>
-
-        {/* Main Category */}
-        <div className="mb-4">
-          <label htmlFor="mainCategory" className="block text-gray-700 font-medium mb-2">
-            Main Category
-          </label>
-          <select
-            id="mainCategory"
-            value={mainCategory}
-            onChange={(e) => handleMainCategoryChange(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded-md"
-            required
-          >
-            {Object.keys(categoriesMap).map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Sub Category */}
-        <div className="mb-4">
-          <label htmlFor="subCategory" className="block text-gray-700 font-medium mb-2">
-            Sub Category
-          </label>
-          <select
-            id="subCategory"
-            value={subCategory}
-            onChange={(e) => handleSubCategoryChange(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded-md"
-            required
-          >
-            {subCategoryOptions.map((sub) => (
-              <option key={sub} value={sub}>
-                {sub}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Media Type */}
-        <div className="mb-4">
-          <span className="block text-gray-700 font-medium mb-2">Media Type</span>
-          <div className="flex items-center space-x-4">
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="mediaType"
-                value="image"
-                checked={mediaType === "image"}
-                onChange={() => handleMediaTypeChange("image")}
-                className="form-radio"
-              />
-              <span className="ml-2">Image(s)</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="mediaType"
-                value="video"
-                checked={mediaType === "video"}
-                onChange={() => handleMediaTypeChange("video")}
-                className="form-radio"
-              />
-              <span className="ml-2">Video</span>
-            </label>
-          </div>
-          <p className="text-sm text-gray-500 mt-1">
-            {mediaType === "image" ? "Multiple images allowed" : "Only one video file allowed"}
-          </p>
-        </div>
-
-        {/* File Upload */}
-        <div className="mb-6">
-          <label htmlFor="files" className="block text-gray-700 font-medium mb-2">
-            {mediaType === "image" ? "Select Images" : "Select Video"}
-          </label>
-          <input
-            type="file"
-            id="files"
-            accept={mediaType === "image" ? "image/*" : "video/*"}
-            onChange={handleFileChange}
-            className="w-full border border-gray-300 p-2 rounded-md"
-            multiple={mediaType === "image"}
-            required
-          />
-        </div>
-
-        {/* Preview Section (for images) */}
-        {mediaType === "image" && previewUrls.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Image Preview</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {previewUrls.map((url, index) => (
-                <img
-                  key={index}
-                  src={url}
-                  alt={`Preview ${index}`}
-                  className="w-full h-40 object-cover rounded shadow"
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        <button
-          type="submit"
-          className={`w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors duration-300 ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          disabled={loading}
+      {/* Main Category */}
+      <div className="mb-2">
+        <label className="block font-semibold">Main Category:</label>
+        <select
+          value={mainCategory}
+          onChange={(e) => handleMainCategoryChange(e.target.value)}
+          className="border p-1 w-full"
         >
-          {loading ? "Uploading..." : "Upload Portfolio Item"}
-        </button>
-      </form>
-    </div>
+          {mains.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Sub Category */}
+      <div className="mb-2">
+        <label className="block font-semibold">Sub Category:</label>
+        <select
+          value={subCategory}
+          onChange={(e) => handleSubCategoryChange(e.target.value)}
+          className="border p-1 w-full"
+        >
+          {subs.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Media Type */}
+      <div className="mb-2">
+        <label className="block font-semibold">Media Type:</label>
+        <select
+          value={mediaType}
+          onChange={(e) =>
+            handleMediaTypeChange(e.target.value as "image" | "video")
+          }
+          className="border p-1 w-full"
+        >
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+        </select>
+      </div>
+
+      {/* File Input */}
+      <div className="mb-2">
+        <label className="block font-semibold">Choose File(s):</label>
+        <input
+          type="file"
+          accept={mediaType === "image" ? "image/*" : "video/*"}
+          multiple={mediaType === "image"}
+          onChange={handleFileChange}
+        />
+      </div>
+
+      {/* Preview */}
+      {previewUrls.length > 0 && (
+        <div className="mb-2">
+          <p className="font-semibold">Preview:</p>
+          {previewUrls.map((url, i) => (
+            <div key={i} className="my-2">
+              {mediaType === "image" ? (
+                <img src={url} className="max-h-40" alt={`preview ${i}`} />
+              ) : (
+                <video src={url} controls className="max-h-40" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={loading}
+        className="px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        {loading ? "Uploading…" : "Upload"}
+      </button>
+
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {success && <p className="text-green-600 mt-2">{success}</p>}
+    </form>
   );
 }

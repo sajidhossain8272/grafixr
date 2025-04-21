@@ -13,6 +13,7 @@
     "@react-three/fiber": "^9.1.0",
     "@react-three/postprocessing": "^3.0.4",
     "cropperjs": "^2.0.0",
+    "firebase": "^11.6.0",
     "framer-motion": "^12.5.0",
     "framer-motion-3d": "^12.4.13",
     "next": "15.2.2",

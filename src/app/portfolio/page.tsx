@@ -1,196 +1,127 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export interface PortfolioItem {
+interface Item {
   _id: string;
   title: string;
   description: string;
-  mainCategory: string;
-  subCategory: string;
   mediaType: "image" | "video";
-  files: string[]; // array of file paths
-  createdAt: string;
+  files: string[];
 }
 
-function PortfolioContent() {
-  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
-
-  // States for dynamic filters
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("createdAt");
-  const [sortOrder, setSortOrder] = useState<string>("desc");
+export default function PortfolioPage() {
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Extract filter values from the URL
-  const mainCategory = searchParams.get("mainCategory") || "";
-  const subCategory = searchParams.get("subCategory") || "";
-  const searchParam = searchParams.get("search") || "";
-  const sortByParam = searchParams.get("sortBy") || "createdAt";
-  const sortOrderParam = searchParams.get("sortOrder") || "desc";
-
-  // Sync local state with URL parameters
   useEffect(() => {
-    setSearchQuery(searchParam);
-    setSortBy(sortByParam);
-    setSortOrder(sortOrderParam);
-  }, [searchParam, sortByParam, sortOrderParam]);
+    setSearch(searchParams.get("search") || "");
+    setSortBy(searchParams.get("sortBy") || "createdAt");
+    setSortOrder((searchParams.get("sortOrder") as any) || "desc");
+  }, [searchParams]);
 
-  // Fetch portfolio items based on the URL parameters
   useEffect(() => {
-    const fetchPortfolio = async () => {
+    async function fetchData() {
       try {
-        let url =
-          `${process.env.NEXT_PUBLIC_API_URL ||
-            "https://grafixr-backend.vercel.app"}/portfolio`;
+        let url = `/api/portfolio`;
         const params = new URLSearchParams();
-        if (mainCategory) params.set("mainCategory", mainCategory);
-        if (subCategory) params.set("subCategory", subCategory);
-        if (searchParam) params.set("search", searchParam);
-        if (sortByParam) params.set("sortBy", sortByParam);
-        if (sortOrderParam) params.set("sortOrder", sortOrderParam);
-
-        if (params.toString()) {
-          url += `?${params.toString()}`;
-        }
-
+        if (search) params.set("search", search);
+        params.set("sortBy", sortBy);
+        params.set("sortOrder", sortOrder);
+        if ([...params].length) url += `?${params}`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to load portfolio items");
-        const data = await res.json();
-        setPortfolioItems(data);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unknown error occurred");
-        }
+        if (!res.ok) throw new Error("Failed to load");
+        setItems(await res.json());
+      } catch (e: any) {
+        setError(e.message);
       } finally {
         setLoading(false);
       }
-    };
+    }
+    fetchData();
+  }, [search, sortBy, sortOrder]);
 
-    fetchPortfolio();
-  }, [mainCategory, subCategory, searchParam, sortByParam, sortOrderParam]);
-
-  const handleItemClick = (id: string) => {
-    router.push(`/portfolio/${id}`);
+  const apply = () => {
+    const qs = new URLSearchParams();
+    if (search) qs.set("search", search);
+    qs.set("sortBy", sortBy);
+    qs.set("sortOrder", sortOrder);
+    router.push(`/portfolio?${qs}`);
   };
 
-  // Update URL parameters to apply new filters
-  const applyFilters = () => {
-    const params = new URLSearchParams();
-    if (mainCategory) params.set("mainCategory", mainCategory);
-    if (subCategory) params.set("subCategory", subCategory);
-    if (searchQuery) params.set("search", searchQuery);
-    params.set("sortBy", sortBy);
-    params.set("sortOrder", sortOrder);
-    router.push(`/portfolio?${params.toString()}`);
-  };
-
-  if (loading) {
-    return <div className="p-8 text-center">Loading portfolio…</div>;
-  }
-  if (error) {
-    return <div className="p-8 text-center text-red-600">Error: {error}</div>;
-  }
+  if (loading) return <p>Loading…</p>;
+  if (error) return <p className="text-red-600">{error}</p>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-center mb-8">Our Portfolio</h1>
-
-      {/* Filter & Sort UI */}
-      <div className="mb-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl mb-4">Our Portfolio</h1>
+      <div className="flex gap-2 mb-4">
         <input
-          type="text"
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="p-2 border border-gray-300 rounded-md"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search…"
+          className="border p-2"
         />
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="p-2 border border-gray-300 rounded-md"
+          className="border p-2"
         >
           <option value="createdAt">Date</option>
           <option value="title">Title</option>
         </select>
         <select
           value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value)}
-          className="p-2 border border-gray-300 rounded-md"
+          onChange={(e) =>
+            setSortOrder(e.target.value as "asc" | "desc")
+          }
+          className="border p-2"
         >
           <option value="desc">Descending</option>
           <option value="asc">Ascending</option>
         </select>
-        <button
-          onClick={applyFilters}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md"
-        >
-          Apply Filters
+        <button onClick={apply} className="bg-blue-600 text-white px-4">
+          Apply
         </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {portfolioItems.map((item) => {
-          const firstFile =
-            item.files && item.files.length > 0 ? item.files[0] : null;
-
-          return (
-            <div
-              key={item._id}
-              onClick={() => handleItemClick(item._id)}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-            >
-              <div className="relative w-full aspect-[16/9] bg-gray-200 overflow-hidden">
-                {item.mediaType === "image" && firstFile ? (
-                  <img
-                    src={`${
-                      process.env.NEXT_PUBLIC_API_URL ||
-                      "https://grafixr-backend.vercel.app"
-                    }/${firstFile}`}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : item.mediaType === "video" && firstFile ? (
-                  <video
-                    className="w-full h-full object-cover"
-                    src={`${
-                      process.env.NEXT_PUBLIC_API_URL ||
-                      "https://grafixr-backend.vercel.app"
-                    }/${firstFile}`}
-                    poster="/video-placeholder.png"
-                    autoPlay={false}
-                    muted
-                  />
-                ) : (
-                  <div className="flex items-center justify-center w-full h-full text-gray-500">
-                    No file
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black opacity-0 hover:opacity-25 transition-opacity duration-300" />
-              </div>
-              <div className="p-4">
-                <h2 className="text-xl font-semibold">{item.title}</h2>
-                <p className="text-gray-600 text-sm mt-2">{item.description}</p>
-              </div>
+        {items.map((it) => (
+          <div
+            key={it._id}
+            onClick={() => router.push(`/portfolio/${it._id}`)}
+            className="cursor-pointer bg-white shadow rounded overflow-hidden"
+          >
+            {it.mediaType === "image" && it.files[0] && (
+              <img
+                src={it.files[0]}
+                alt={it.title}
+                className="w-full h-48 object-cover"
+              />
+            )}
+            {it.mediaType === "video" && it.files[0] && (
+              <video
+                src={it.files[0]}
+                className="w-full h-48 object-cover"
+                muted
+                controls={false}
+              />
+            )}
+            <div className="p-4">
+              <h2 className="font-semibold">{it.title}</h2>
+              <p className="text-gray-600 text-sm">{it.description}</p>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
-  );
-}
-
-export default function PortfolioPage() {
-  return (
-    <Suspense fallback={<div>Loading portfolio...</div>}>
-      <PortfolioContent />
-    </Suspense>
   );
 }

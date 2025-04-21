@@ -21,8 +21,7 @@ interface Category {
 
 export default function Navigation() {
   const pathname = usePathname();
-  const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "https://grafixr-backend.vercel.app";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
@@ -98,7 +97,7 @@ export default function Navigation() {
               >
                 Portfolio
               </Link>
-              
+
               {categories.map((cat) => (
                 <div
                   key={cat._id}
@@ -157,7 +156,6 @@ export default function Navigation() {
               >
                 Contact Us
               </Link>
-        
             </div>
 
             {/* Mobile Menu Button */}
@@ -179,7 +177,7 @@ export default function Navigation() {
 
       {/* Mobile Menu – Fullscreen Overlay */}
       {isMenuOpen && (
-        <div className='md:hidden fixed inset-0 bg-gradient-to-br from-gray-900 to-black text-white z-20 overflow-auto p-4 pt-20' >
+        <div className='md:hidden fixed inset-0 bg-gradient-to-br from-gray-900 to-black text-white z-20 overflow-auto p-4 pt-20'>
           <Link
             href='/about'
             className={`block text-2xl font-bold hover:text-gray-300 mb-4 ${isActive(
@@ -228,7 +226,6 @@ export default function Navigation() {
           >
             Contact Us
           </Link>
-    
         </div>
       )}
     </>
