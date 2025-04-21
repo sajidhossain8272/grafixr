@@ -23,8 +23,12 @@ export default function SinglePortfolioPage() {
         const res = await fetch(`/api/portfolio/${id}`);
         if (!res.ok) throw new Error("Not found");
         setItem(await res.json());
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("An unknown error occurred");
+        }
       } finally {
         setLoading(false);
       }

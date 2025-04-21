@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { ChangeEvent, FormEvent } from "react";
 
@@ -13,13 +13,13 @@ interface Props {
   error: string;
   success: string;
   categoriesMap: Record<string, string[]>;
-  handleTitleChange: (val: string) => void;
+  handleTitleChange:       (val: string) => void;
   handleDescriptionChange: (val: string) => void;
-  handleMainCategoryChange: (val: string) => void;
+  handleMainCategoryChange:(val: string) => void;
   handleSubCategoryChange: (val: string) => void;
-  handleMediaTypeChange: (val: "image" | "video") => void;
-  handleFileChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  handleMediaTypeChange:   (val: "image" | "video") => void;
+  handleFileChange:        (e: ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit:            (e: FormEvent<HTMLFormElement>) => void;
 }
 
 export default function AdminUploadForm({
@@ -42,7 +42,7 @@ export default function AdminUploadForm({
   handleSubmit,
 }: Props) {
   const mains = Object.keys(categoriesMap);
-  const subs = categoriesMap[mainCategory] || [];
+  const subs  = categoriesMap[mainCategory] || [];
 
   return (
     <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow-md">
@@ -54,7 +54,7 @@ export default function AdminUploadForm({
         <input
           type="text"
           value={title}
-          onChange={(e) => handleTitleChange(e.target.value)}
+          onChange={e => handleTitleChange(e.target.value)}
           className="border p-1 w-full"
           required
         />
@@ -65,7 +65,7 @@ export default function AdminUploadForm({
         <label className="block font-semibold">Description:</label>
         <textarea
           value={description}
-          onChange={(e) => handleDescriptionChange(e.target.value)}
+          onChange={e => handleDescriptionChange(e.target.value)}
           className="border p-1 w-full"
         />
       </div>
@@ -75,13 +75,13 @@ export default function AdminUploadForm({
         <label className="block font-semibold">Main Category:</label>
         <select
           value={mainCategory}
-          onChange={(e) => handleMainCategoryChange(e.target.value)}
+          onChange={e => handleMainCategoryChange(e.target.value)}
           className="border p-1 w-full"
+          required
         >
-          {mains.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
+          <option value="" disabled>— Select main category —</option>
+          {mains.map(m => (
+            <option key={m} value={m}>{m}</option>
           ))}
         </select>
       </div>
@@ -91,13 +91,13 @@ export default function AdminUploadForm({
         <label className="block font-semibold">Sub Category:</label>
         <select
           value={subCategory}
-          onChange={(e) => handleSubCategoryChange(e.target.value)}
+          onChange={e => handleSubCategoryChange(e.target.value)}
           className="border p-1 w-full"
+          required
         >
-          {subs.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
+          <option value="" disabled>— Select sub category —</option>
+          {subs.map(s => (
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
       </div>
@@ -107,10 +107,9 @@ export default function AdminUploadForm({
         <label className="block font-semibold">Media Type:</label>
         <select
           value={mediaType}
-          onChange={(e) =>
-            handleMediaTypeChange(e.target.value as "image" | "video")
-          }
+          onChange={e => handleMediaTypeChange(e.target.value as "image"|"video")}
           className="border p-1 w-full"
+          required
         >
           <option value="image">Image</option>
           <option value="video">Video</option>
@@ -125,6 +124,7 @@ export default function AdminUploadForm({
           accept={mediaType === "image" ? "image/*" : "video/*"}
           multiple={mediaType === "image"}
           onChange={handleFileChange}
+          required
         />
       </div>
 
@@ -135,7 +135,7 @@ export default function AdminUploadForm({
           {previewUrls.map((url, i) => (
             <div key={i} className="my-2">
               {mediaType === "image" ? (
-                <img src={url} className="max-h-40" alt={`preview ${i}`} />
+                <img src={url} alt={`preview ${i}`} className="max-h-40" />
               ) : (
                 <video src={url} controls className="max-h-40" />
               )}
@@ -153,7 +153,7 @@ export default function AdminUploadForm({
         {loading ? "Uploading…" : "Upload"}
       </button>
 
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {error   && <p className="text-red-500 mt-2">{error}</p>}
       {success && <p className="text-green-600 mt-2">{success}</p>}
     </form>
   );

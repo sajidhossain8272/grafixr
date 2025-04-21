@@ -11,7 +11,10 @@ interface Category {
 
 interface AdminCategoriesProps {
   API_URL: string;
+  categoriesMap: Record<string, string[]>;
+  refresh: () => void;
 }
+
 
 export default function AdminCategories({ API_URL }: AdminCategoriesProps) {
   const [categories, setCategories] = useState<Category[]>([]);
