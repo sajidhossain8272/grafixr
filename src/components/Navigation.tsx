@@ -12,7 +12,7 @@ import {
   FaVideo,
 } from "react-icons/fa";
 
-// Define the category type returned from your API
+// Define the category type returned from your API test
 interface Category {
   _id: string;
   mainCategory: string;
@@ -31,7 +31,7 @@ export default function Navigation() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${API_URL}/categories`);
+        const res = await fetch(`${API_URL}/admin/categories`);
         if (!res.ok) throw new Error("Failed to fetch categories");
         const data = await res.json();
         setCategories(data);
