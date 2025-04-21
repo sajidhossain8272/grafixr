@@ -25,7 +25,8 @@ export default function PortfolioPage() {
   useEffect(() => {
     setSearch(searchParams.get("search") || "");
     setSortBy(searchParams.get("sortBy") || "createdAt");
-    setSortOrder((searchParams.get("sortOrder") as any) || "desc");
+    const sortOrderValue = searchParams.get("sortOrder");
+    setSortOrder(sortOrderValue === "asc" || sortOrderValue === "desc" ? sortOrderValue : "desc");
   }, [searchParams]);
 
   useEffect(() => {
@@ -40,8 +41,8 @@ export default function PortfolioPage() {
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to load");
         setItems(await res.json());
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "An unknown error occurred");
       } finally {
         setLoading(false);
       }
