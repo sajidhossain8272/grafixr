@@ -1,71 +1,62 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent, KeyboardEvent } from "react";
+import React, {
+  useState,
+  FormEvent,
+  KeyboardEvent,
+} from "react";
 
 interface Category {
   _id: string;
   mainCategory: string;
   subCategories: string[];
-  createdAt: string;
 }
 
 interface AdminCategoriesProps {
+  categories: Category[];
+  loading: boolean;
   API_URL: string;
-  categoriesMap: Record<string, string[]>;
   refresh: () => void;
 }
 
-
-export default function AdminCategories({ API_URL }: AdminCategoriesProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
+const AdminCategories: React.FC<AdminCategoriesProps> = ({
+  categories,
+  loading,
+  API_URL,
+  refresh,
+}) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // For creating a new main category with tag-style subcategory input
-  const [newMainCategory, setNewMainCategory] = useState<string>("");
-  const [newSubCategories, setNewSubCategories] = useState<string[]>([]);
-  const [newSubCategoryInput, setNewSubCategoryInput] = useState<string>("");
+  // New‑category form
+  const [newMainCategory, setNewMainCategory] = useState("");
+  const [newSubCategories, setNewSubCategories] = useState<string[]>(
+    []
+  );
+  const [newSubCategoryInput, setNewSubCategoryInput] =
+    useState("");
 
-  // For editing subcategories using tag inputs
-  const [editCategoryId, setEditCategoryId] = useState<string>("");
-  const [editSubCategories, setEditSubCategories] = useState<string[]>([]);
-  const [editSubCategoryInput, setEditSubCategoryInput] = useState<string>("");
+  // Edit mode
+  const [editCategoryId, setEditCategoryId] = useState("");
+  const [editSubCategories, setEditSubCategories] = useState<
+    string[]
+  >([]);
+  const [editSubCategoryInput, setEditSubCategoryInput] =
+    useState("");
 
-  // Fetch categories from /admin/categories
-  const fetchCategories = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/admin/categories`);
-      if (!res.ok) throw new Error("Failed to load categories");
-      const data = await res.json();
-      setCategories(data);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unknown error occurred");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategories();
-  }, [API_URL]);
-
-  // CREATE: new main category
+  // Create
   const handleCreateCategory = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
     if (!newMainCategory.trim()) {
       setError("Main category is required");
       return;
     }
+
     try {
-      const response = await fetch(`${API_URL}/admin/categories`, {
+      const res = await fetch(`${API_URL}/admin/categories`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -73,167 +64,161 @@ export default function AdminCategories({ API_URL }: AdminCategoriesProps) {
           subCategories: newSubCategories,
         }),
       });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to create category");
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || `Error ${res.status}`);
       }
-      setSuccess("Category created successfully!");
+
+      setSuccess("Category created!");
       setNewMainCategory("");
       setNewSubCategories([]);
       setNewSubCategoryInput("");
-      fetchCategories();
+      await refresh();
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unknown error occurred");
-      }
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
-  // DELETE: entire category
+  // Delete
   const handleDeleteCategory = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+    if (!confirm("Delete this category?")) return;
     try {
       const res = await fetch(`${API_URL}/admin/categories/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to delete category");
+        const { error } = await res.json();
+        throw new Error(error || `Error ${res.status}`);
       }
-      alert("Category deleted successfully.");
-      fetchCategories();
+      await refresh();
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert("Error: " + err.message);
-      } else {
-        alert("An unknown error occurred");
-      }
+      alert(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
-  // Start editing a category
+  // Enter edit mode
   const startEditing = (cat: Category) => {
     setEditCategoryId(cat._id);
     setEditSubCategories(cat.subCategories);
     setEditSubCategoryInput("");
+    setError("");
+    setSuccess("");
   };
 
-  // CANCEL editing
   const cancelEditing = () => {
     setEditCategoryId("");
     setEditSubCategories([]);
     setEditSubCategoryInput("");
   };
 
-  // UPDATE subcategories
-  const handleUpdateSubCategories = async (catId: string) => {
+  // Save updates
+  const handleUpdateSubCategories = async () => {
+    if (!editCategoryId) return;
     if (editSubCategories.length === 0) {
-      alert("Subcategories cannot be empty. Enter at least one or cancel.");
+      alert("Enter at least one subcategory or cancel.");
       return;
     }
+
     try {
-      const res = await fetch(`${API_URL}/admin/categories/${catId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subCategories: editSubCategories }),
-      });
+      const res = await fetch(
+        `${API_URL}/admin/categories/${editCategoryId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subCategories: editSubCategories }),
+        }
+      );
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to update subcategories");
+        const { error } = await res.json();
+        throw new Error(error || `Error ${res.status}`);
       }
-      alert("Subcategories updated!");
-      setEditCategoryId("");
-      setEditSubCategories([]);
-      setEditSubCategoryInput("");
-      fetchCategories();
+      setSuccess("Subcategories updated!");
+      cancelEditing();
+      await refresh();
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert("Error: " + err.message);
-      } else {
-        alert("An unknown error occurred");
-      }
+      alert(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
-  // Functions to handle adding/removing tags for new category
-  const handleNewSubCategoryKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  // Helpers for tag inputs
+  const addNewTag = (tag: string) => {
+    if (tag && !newSubCategories.includes(tag)) {
+      setNewSubCategories((prev) => [...prev, tag]);
+    }
+  };
+  const addEditTag = (tag: string) => {
+    if (tag && !editSubCategories.includes(tag)) {
+      setEditSubCategories((prev) => [...prev, tag]);
+    }
+  };
+
+  const handleNewKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
-      const tag = newSubCategoryInput.trim();
-      if (tag && !newSubCategories.includes(tag)) {
-        setNewSubCategories([...newSubCategories, tag]);
-      }
+      addNewTag(newSubCategoryInput.trim());
       setNewSubCategoryInput("");
     }
   };
-
-  const handleRemoveNewTag = (tag: string) => {
-    setNewSubCategories(newSubCategories.filter((t) => t !== tag));
+  const handleNewBlur = () => {
+    addNewTag(newSubCategoryInput.trim());
+    setNewSubCategoryInput("");
   };
+  const removeNewTag = (tag: string) =>
+    setNewSubCategories((prev) => prev.filter((t) => t !== tag));
 
-  // Functions for editing subcategory tags
-  const handleEditSubCategoryKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleEditKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
-      addEditTag();
+      addEditTag(editSubCategoryInput.trim());
+      setEditSubCategoryInput("");
     }
   };
-
-  const addEditTag = () => {
-    const tag = editSubCategoryInput.trim();
-    if (tag && !editSubCategories.includes(tag)) {
-      setEditSubCategories([...editSubCategories, tag]);
-    }
+  const handleEditBlur = () => {
+    addEditTag(editSubCategoryInput.trim());
     setEditSubCategoryInput("");
   };
-
-  const handleEditSubCategoryBlur = () => {
-    // On blur, commit any input if exists
-    addEditTag();
-  };
-
-  const handleRemoveEditTag = (tag: string) => {
-    setEditSubCategories(editSubCategories.filter((t) => t !== tag));
-  };
+  const removeEditTag = (tag: string) =>
+    setEditSubCategories((prev) => prev.filter((t) => t !== tag));
 
   return (
-    <div className="bg-white p-6 rounded-md shadow-md max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-center">Manage Categories</h2>
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+      <h2 className="text-2xl font-bold mb-4 text-center">
+        Manage Categories
+      </h2>
       {error && <div className="text-red-600 mb-4">{error}</div>}
       {success && <div className="text-green-600 mb-4">{success}</div>}
 
-      {/* Create New Category Form */}
+      {/* Create New */}
       <form onSubmit={handleCreateCategory} className="mb-8">
         <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">
+          <label className="block mb-1 font-medium">
             Main Category
           </label>
           <input
             type="text"
             value={newMainCategory}
-            onChange={(e) => setNewMainCategory(e.target.value)}
-            className="border p-2 rounded w-full"
-            placeholder="Enter main category name"
+            onChange={(e) =>
+              setNewMainCategory(e.target.value)
+            }
             required
+            className="w-full border rounded px-2 py-1"
+            placeholder="e.g. Graphic Design"
           />
         </div>
-
         <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">
+          <label className="block mb-1 font-medium">
             Sub Categories
           </label>
-          <div className="flex flex-wrap gap-2 border p-2 rounded">
+          <div className="flex flex-wrap gap-2 border rounded p-2">
             {newSubCategories.map((tag) => (
               <div
                 key={tag}
-                className="bg-gray-200 text-gray-700 px-2 py-1 rounded flex items-center"
+                className="flex items-center bg-gray-200 px-2 py-1 rounded"
               >
-                <span>{tag}</span>
+                {tag}
                 <button
                   type="button"
-                  onClick={() => handleRemoveNewTag(tag)}
+                  onClick={() => removeNewTag(tag)}
                   className="ml-1 text-red-500"
                 >
                   &times;
@@ -243,105 +228,119 @@ export default function AdminCategories({ API_URL }: AdminCategoriesProps) {
             <input
               type="text"
               value={newSubCategoryInput}
-              onChange={(e) => setNewSubCategoryInput(e.target.value)}
-              onKeyDown={handleNewSubCategoryKeyDown}
-              className="flex-grow min-w-[100px] focus:outline-none"
-              placeholder="Add subcategory..."
+              onChange={(e) =>
+                setNewSubCategoryInput(e.target.value)
+              }
+              onKeyDown={handleNewKeyDown}
+              onBlur={handleNewBlur}
+              className="flex-grow min-w-[120px] focus:outline-none"
+              placeholder="Press Enter or comma to add"
             />
           </div>
         </div>
-
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Create Main Category
+          Create Category
         </button>
       </form>
 
+      {/* Existing */}
       {loading ? (
-        <div className="text-center">Loading categories...</div>
+        <p className="text-center">Loading…</p>
       ) : categories.length === 0 ? (
-        <div className="text-center text-gray-600">No categories found.</div>
+        <p className="text-center text-gray-600">
+          No categories found.
+        </p>
       ) : (
-        <div className="divide-y divide-gray-300">
-          {categories.map((cat) => (
-            <div
-              key={cat._id}
-              className="py-4 flex flex-col md:flex-row md:items-center md:justify-between"
-            >
-              <div className="mb-2 md:mb-0">
-                <span className="text-lg font-semibold">{cat.mainCategory}</span>
-                {editCategoryId === cat._id ? (
-                  <div className="mt-2 flex flex-wrap gap-2 border p-2 rounded">
-                    {editSubCategories.map((tag) => (
-                      <div
-                        key={tag}
-                        className="bg-gray-200 text-gray-700 px-2 py-1 rounded flex items-center"
+        categories.map((cat) => (
+          <div
+            key={cat._id}
+            className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center"
+          >
+            <div className="mb-3 md:mb-0">
+              <span className="font-semibold text-lg">
+                {cat.mainCategory}
+              </span>
+
+              {editCategoryId === cat._id ? (
+                <div className="mt-2 flex flex-wrap gap-2 border rounded p-2">
+                  {editSubCategories.map((tag) => (
+                    <div
+                      key={tag}
+                      className="flex items-center bg-gray-200 px-2 py-1 rounded"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeEditTag(tag)}
+                        className="ml-1 text-red-500"
                       >
-                        <span>{tag}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveEditTag(tag)}
-                          className="ml-1 text-red-500"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    ))}
-                    <input
-                      type="text"
-                      value={editSubCategoryInput}
-                      onChange={(e) => setEditSubCategoryInput(e.target.value)}
-                      onKeyDown={handleEditSubCategoryKeyDown}
-                      onBlur={handleEditSubCategoryBlur}
-                      className="flex-grow min-w-[100px] focus:outline-none"
-                      placeholder="Add subcategory..."
-                    />
-                  </div>
-                ) : (
-                  <p className="text-gray-600 text-sm mt-1">
-                    Subcategories: {cat.subCategories.join(", ")}
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center space-x-2">
-                {editCategoryId === cat._id ? (
-                  <>
-                    <button
-                      onClick={() => handleUpdateSubCategories(cat._id)}
-                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={cancelEditing}
-                      className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => startEditing(cat)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteCategory(cat._id)}
-                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </>
-                )}
-              </div>
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                  <input
+                    type="text"
+                    value={editSubCategoryInput}
+                    onChange={(e) =>
+                      setEditSubCategoryInput(e.target.value)
+                    }
+                    onKeyDown={handleEditKeyDown}
+                    onBlur={handleEditBlur}
+                    className="flex-grow min-w-[120px] focus:outline-none"
+                    placeholder="Press Enter or comma to add"
+                  />
+                </div>
+              ) : (
+                <p className="text-gray-600 mt-1">
+                  Subcategories:{" "}
+                  {cat.subCategories.join(", ")}
+                </p>
+              )}
             </div>
-          ))}
-        </div>
+
+            <div className="flex gap-2">
+              {editCategoryId === cat._id ? (
+                <>
+                  <button
+                    onClick={handleUpdateSubCategories}
+                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={cancelEditing}
+                    className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => startEditing(cat)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleDeleteCategory(cat._id)
+                    }
+                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        ))
       )}
     </div>
   );
-}
+};
+
+export default AdminCategories;

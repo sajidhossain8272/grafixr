@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, {
   useState,
@@ -7,10 +7,10 @@ import React, {
   FormEvent,
 } from "react";
 
-import AdminNavigation   from "./AdminNavigation";
-import AdminUploadForm  from "./AdminUploadForm";
-import AdminList        from "./AdminList";
-import AdminCategories  from "./AdminCategories";
+import AdminNavigation from "./AdminNavigation";
+import AdminUploadForm from "./AdminUploadForm";
+import AdminList from "./AdminList";
+import AdminCategories from "./AdminCategories";
 
 interface PortfolioItem {
   _id: string;
@@ -23,82 +23,126 @@ interface PortfolioItem {
   createdAt: string;
 }
 
+interface Category {
+  _id: string;
+  mainCategory: string;
+  subCategories: string[];
+  createdAt: string;
+}
+
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"upload"|"list"|"categories">("upload");
+  const [activeTab, setActiveTab] =
+    useState<"upload" | "list" | "categories">("upload");
 
-  // upload form state
-  const [title, setTitle]             = useState("");
-  const [description, setDescription] = useState("");
+  // --- Categories state ---
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesMap, setCategoriesMap] = useState<
+    Record<string, string[]>
+  >({});
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+
+  // Defaults for upload form
   const [mainCategory, setMainCategory] = useState("");
-  const [subCategory, setSubCategory]   = useState("");
-  const [mediaType, setMediaType]     = useState<"image"|"video">("image");
-  const [files, setFiles]             = useState<FileList|null>(null);
+  const [subCategory, setSubCategory] = useState("");
+
+  // --- Portfolio items state ---
+  const [items, setItems] = useState<PortfolioItem[]>([]);
+  const [listLoading, setListLoading] = useState(false);
+
+  // --- Upload form state ---
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [mediaType, setMediaType] = useState<"image" | "video">("image");
+  const [files, setFiles] = useState<FileList | null>(null);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState("");
-  const [success, setSuccess]         = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadSuccess, setUploadSuccess] = useState("");
 
-  // list + categories
-  const [items, setItems]               = useState<PortfolioItem[]>([]);
-  const [listLoading, setListLoading]   = useState(false);
-  const [categoriesMap, setCategoriesMap] = useState<Record<string,string[]>>({});
+  const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
-  const API = "/api";
+  // Fetch categories → categories & categoriesMap
+  const fetchCategories = async () => {
+    setCategoriesLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/categories`);
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      const data: Category[] = await res.json();
+      setCategories(data);
+
+      // build map
+      const map: Record<string, string[]> = {};
+      data.forEach((c) => {
+        map[c.mainCategory] = c.subCategories;
+      });
+      setCategoriesMap(map);
+
+      // set defaults if needed
+      if (data.length > 0) {
+        // if current mainCategory is gone or not set
+        if (!map[mainCategory]) {
+          const first = data[0].mainCategory;
+          setMainCategory(first);
+          setSubCategory(map[first][0] || "");
+        } else {
+          // ensure current subCategory is still valid
+          if (!map[mainCategory].includes(subCategory)) {
+            setSubCategory(map[mainCategory][0] || "");
+          }
+        }
+      } else {
+        setMainCategory("");
+        setSubCategory("");
+      }
+    } catch (err) {
+      console.error("Failed loading categories", err);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  // Fetch portfolio items
+  const fetchItems = async () => {
+    setListLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/list`);
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      setItems(await res.json());
+    } catch (err) {
+      console.error("Failed loading items", err);
+    } finally {
+      setListLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // load categories first
-    (async () => {
-      try {
-        const res = await fetch(`${API}/admin/categories`);
-        const data: { mainCategory: string; subCategories: string[] }[] = await res.json();
-        const map: Record<string,string[]> = {};
-        data.forEach(c => (map[c.mainCategory] = c.subCategories));
-        setCategoriesMap(map);
+    fetchCategories();
+    fetchItems();
+  }, [API_URL]);
 
-        // set defaults once categories arrive
-        const mains = Object.keys(map);
-        if (mains.length > 0) {
-          setMainCategory(mains[0]);
-          setSubCategory(map[mains[0]][0] || "");
-        }
-      } catch (e) {
-        console.error("Failed loading categories", e);
-      }
-    })();
-
-    // load existing portfolio items
-    (async () => {
-      setListLoading(true);
-      try {
-        const res = await fetch(`${API}/admin/list`);
-        setItems(await res.json());
-      } catch (e) {
-        console.error("Failed loading items", e);
-      } finally {
-        setListLoading(false);
-      }
-    })();
-  }, []);
-
-  // file select + preview
+  // File select + preview
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     setFiles(e.target.files);
     if (mediaType === "image") {
-      setPreviewUrls(Array.from(e.target.files).map(f => URL.createObjectURL(f)));
+      setPreviewUrls(
+        Array.from(e.target.files).map((f) => URL.createObjectURL(f))
+      );
     } else {
       setPreviewUrls([URL.createObjectURL(e.target.files[0])]);
     }
   };
 
-  // form submit
+  // Upload submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!files || files.length === 0) {
-      setError("Please select at least one file.");
+      setUploadError("Please select at least one file.");
       return;
     }
-    setError(""); setSuccess(""); setLoading(true);
+    setUploadError("");
+    setUploadSuccess("");
+    setUploading(true);
 
     try {
       const formData = new FormData();
@@ -107,22 +151,21 @@ export default function AdminPage() {
       formData.append("mainCategory", mainCategory);
       formData.append("subCategory", subCategory);
       formData.append("mediaType", mediaType);
-      Array.from(files).forEach(f => formData.append("files", f));
+      Array.from(files).forEach((f) => formData.append("files", f));
 
-      const res = await fetch(`${API}/admin/upload`, {
+      const res = await fetch(`${API_URL}/admin/upload`, {
         method: "POST",
         body: formData,
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error || "Upload failed");
 
-      setSuccess("Uploaded successfully!");
+      setUploadSuccess("Uploaded successfully!");
       // reset form
       setTitle("");
       setDescription("");
-      // reset back to first category
       const mains = Object.keys(categoriesMap);
-      if (mains.length > 0) {
+      if (mains.length) {
         setMainCategory(mains[0]);
         setSubCategory(categoriesMap[mains[0]][0] || "");
       }
@@ -130,19 +173,40 @@ export default function AdminPage() {
       setFiles(null);
       setPreviewUrls([]);
 
-      // refresh list
-      const listRes = await fetch(`${API}/admin/list`);
-      setItems(await listRes.json());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      // refresh item list
+      await fetchItems();
+    } catch (err: unknown) {
+      setUploadError(
+        err instanceof Error ? err.message : "Unknown upload error"
+      );
     } finally {
-      setLoading(false);
+      setUploading(false);
+    }
+  };
+
+  // Delete handler for AdminList
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this item?")) return;
+    try {
+      const res = await fetch(`${API_URL}/admin/delete/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || `Error ${res.status}`);
+      }
+      setItems((prev) => prev.filter((i) => i._id !== id));
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 mx-auto max-w-7xl">
-      <AdminNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <AdminNavigation
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
       {activeTab === "upload" && (
         <AdminUploadForm
@@ -152,9 +216,9 @@ export default function AdminPage() {
           subCategory={subCategory}
           mediaType={mediaType}
           previewUrls={previewUrls}
-          loading={loading}
-          error={error}
-          success={success}
+          loading={uploading}
+          error={uploadError}
+          success={uploadSuccess}
           categoriesMap={categoriesMap}
           handleTitleChange={setTitle}
           handleDescriptionChange={setDescription}
@@ -167,15 +231,20 @@ export default function AdminPage() {
       )}
 
       {activeTab === "list" && (
-        <AdminList items={items} loading={listLoading} onDelete={(id: string) => {
-          setItems(prevItems => prevItems.filter(item => item._id !== id));
-        }} API_URL={""} />
+        <AdminList
+          items={items}
+          loading={listLoading}
+          onDelete={handleDelete}
+        />
       )}
 
       {activeTab === "categories" && (
         <AdminCategories
-          categoriesMap={categoriesMap}
-          refresh={() => window.location.reload()} API_URL={""}        />
+          categories={categories}
+          refresh={fetchCategories}
+          API_URL={API_URL}
+          loading={categoriesLoading}
+        />
       )}
     </div>
   );

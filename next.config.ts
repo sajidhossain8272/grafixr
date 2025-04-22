@@ -1,12 +1,11 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
 
-  // Allow next/image to optimize from Pexels
   images: {
-    domains: ['images.pexels.com'],
-    // —OR— for path‑level control:
+    domains: ['images.pexels.com', 'res.cloudinary.com'],
+    // You can remove `domains` if you only want to use remotePatterns,
+    // but having both is okay—remotePatterns takes priority.
     remotePatterns: [
       {
         protocol: 'https',
@@ -14,18 +13,41 @@ const nextConfig = {
         port: '',
         pathname: '/photos/**',
       },
+
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
+
+
   },
 
-  // Proxy /api/* to your backend
   async rewrites() {
+    if (process.env.NODE_ENV === 'production') {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        console.warn(
+          '⚠️  NEXT_PUBLIC_API_URL is not defined—skipping /api rewrites'
+        );
+        return [];
+      }
+      return [
+        {
+          source: '/api/:path*',
+          // Note the leading slash before :path*
+          destination: `${apiUrl}/:path*`,
+        },
+      ];
+    }
+
+    // dev fallback
     return [
       {
         source: '/api/:path*',
-        destination:
-          process.env.NODE_ENV === 'production'
-            ? `${process.env.NEXT_PUBLIC_API_URL}/:path*`
-            : 'http://localhost:5000/:path*',
+        destination: 'http://localhost:5000/:path*',
       },
     ];
   },

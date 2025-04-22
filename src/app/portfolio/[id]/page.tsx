@@ -1,7 +1,8 @@
-"use client";
+// src/app/portfolio/[id]/page.tsx
 
-import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import React from "react";
+import Image from "next/image";
+import { notFound } from "next/navigation";
 
 interface Item {
   title: string;
@@ -10,35 +11,26 @@ interface Item {
   files: string[];
 }
 
-export default function SinglePortfolioPage() {
-  const { id } = useParams();
-  const [item, setItem] = useState<Item | null>(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+type Props = {
+  params: { id: string };
+};
 
-  useEffect(() => {
-    if (!id) return;
-    async function fetchItem() {
-      try {
-        const res = await fetch(`/api/portfolio/${id}`);
-        if (!res.ok) throw new Error("Not found");
-        setItem(await res.json());
-      } catch (e: unknown) {
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError("An unknown error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchItem();
-  }, [id]);
+const BASE_URL = "https://grafixr-backend.vercel.app";
 
-  if (loading) return <p>Loading…</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
-  if (!item) return <p>Item not found.</p>;
+export default async function SinglePortfolioPage({ params }: Props) {
+  const { id } = params;
+
+  // Fetch on the server; revalidate every 60 seconds
+  const res = await fetch(`${BASE_URL}/portfolio/${id}`, {
+    next: { revalidate: 60 },
+  });
+
+  if (!res.ok) {
+    // 404 if not found
+    return notFound();
+  }
+
+  const item: Item = await res.json();
 
   return (
     <div className="bg-black text-white min-h-screen">
@@ -47,16 +39,24 @@ export default function SinglePortfolioPage() {
         <p className="mb-6">{item.description}</p>
 
         {item.mediaType === "image" ? (
-          item.files.map((u, i) => (
-            <img
-              key={i}
-              src={u}
-              alt={`${item.title} ${i}`}
-              className="w-full mb-6"
-            />
+          item.files.map((url, i) => (
+            <div key={i} className="mb-6">
+              <Image
+                src={url}
+                alt={`${item.title} ${i + 1}`}
+                width={800}
+                height={600}
+                className="object-contain w-full h-auto"
+              />
+            </div>
           ))
         ) : (
-          <video src={item.files[0]} controls autoPlay className="w-full" />
+          <video
+            src={item.files[0]}
+            controls
+            autoPlay
+            className="w-full mb-6"
+          />
         )}
       </div>
     </div>
