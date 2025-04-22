@@ -1,5 +1,3 @@
-// src/app/portfolio/[id]/page.tsx
-
 import React from "react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -11,23 +9,26 @@ interface Item {
   files: string[];
 }
 
-type Props = {
-  params: { id: string };
-};
-
 const BASE_URL = "https://grafixr-backend.vercel.app";
 
-export default async function SinglePortfolioPage({ params }: Props) {
-  const { id } = params;
+interface PageProps {
+  params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
 
-  // Fetch on the server; revalidate every 60 seconds
+export default async function SinglePortfolioPage({
+  params,
+}: PageProps) {
+  const { id } = params;
   const res = await fetch(`${BASE_URL}/portfolio/${id}`, {
     next: { revalidate: 60 },
   });
 
-  if (!res.ok) {
-    // 404 if not found
+  if (res.status === 404) {
     return notFound();
+  }
+  if (!res.ok) {
+    throw new Error(`Fetch failed: ${res.statusText}`);
   }
 
   const item: Item = await res.json();
@@ -47,6 +48,7 @@ export default async function SinglePortfolioPage({ params }: Props) {
                 width={800}
                 height={600}
                 className="object-contain w-full h-auto"
+                priority={i === 0}
               />
             </div>
           ))

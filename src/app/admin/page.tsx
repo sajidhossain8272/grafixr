@@ -3,10 +3,10 @@
 import React, {
   useState,
   useEffect,
+  useCallback,
   ChangeEvent,
   FormEvent,
 } from "react";
-
 import AdminNavigation from "./AdminNavigation";
 import AdminUploadForm from "./AdminUploadForm";
 import AdminList from "./AdminList";
@@ -34,25 +34,25 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] =
     useState<"upload" | "list" | "categories">("upload");
 
-  // --- Categories state ---
+  // Categories
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesMap, setCategoriesMap] = useState<
     Record<string, string[]>
   >({});
   const [categoriesLoading, setCategoriesLoading] = useState(false);
 
-  // Defaults for upload form
-  const [mainCategory, setMainCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
-
-  // --- Portfolio items state ---
+  // Portfolio items
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [listLoading, setListLoading] = useState(false);
 
-  // --- Upload form state ---
+  // Upload form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [mediaType, setMediaType] = useState<"image" | "video">("image");
+  const [mainCategory, setMainCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
+  const [mediaType, setMediaType] = useState<"image" | "video">(
+    "image"
+  );
   const [files, setFiles] = useState<FileList | null>(null);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -61,8 +61,8 @@ export default function AdminPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
-  // Fetch categories → categories & categoriesMap
-  const fetchCategories = async () => {
+  // stable fetch for categories
+  const fetchCategories = useCallback(async () => {
     setCategoriesLoading(true);
     try {
       const res = await fetch(`${API_URL}/admin/categories`);
@@ -72,68 +72,64 @@ export default function AdminPage() {
 
       // build map
       const map: Record<string, string[]> = {};
-      data.forEach((c) => {
-        map[c.mainCategory] = c.subCategories;
-      });
+      data.forEach((c) => (map[c.mainCategory] = c.subCategories));
       setCategoriesMap(map);
 
-      // set defaults if needed
-      if (data.length > 0) {
-        // if current mainCategory is gone or not set
+      // defaults
+      if (data.length) {
         if (!map[mainCategory]) {
           const first = data[0].mainCategory;
           setMainCategory(first);
           setSubCategory(map[first][0] || "");
-        } else {
-          // ensure current subCategory is still valid
-          if (!map[mainCategory].includes(subCategory)) {
-            setSubCategory(map[mainCategory][0] || "");
-          }
+        } else if (
+          !map[mainCategory].includes(subCategory)
+        ) {
+          setSubCategory(map[mainCategory][0] || "");
         }
-      } else {
-        setMainCategory("");
-        setSubCategory("");
       }
-    } catch (err) {
-      console.error("Failed loading categories", err);
+    } catch (e) {
+      console.error("Failed loading categories", e);
     } finally {
       setCategoriesLoading(false);
     }
-  };
+  }, [API_URL, mainCategory, subCategory]);
 
-  // Fetch portfolio items
-  const fetchItems = async () => {
+  // stable fetch for items
+  const fetchItems = useCallback(async () => {
     setListLoading(true);
     try {
       const res = await fetch(`${API_URL}/admin/list`);
       if (!res.ok) throw new Error(`Error ${res.status}`);
       setItems(await res.json());
-    } catch (err) {
-      console.error("Failed loading items", err);
+    } catch (e) {
+      console.error("Failed loading items", e);
     } finally {
       setListLoading(false);
     }
-  };
+  }, [API_URL]);
 
+  // run once on mount
   useEffect(() => {
     fetchCategories();
     fetchItems();
-  }, [API_URL]);
+  }, [fetchCategories, fetchItems]);
 
-  // File select + preview
+  // file input + preview
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     setFiles(e.target.files);
     if (mediaType === "image") {
       setPreviewUrls(
-        Array.from(e.target.files).map((f) => URL.createObjectURL(f))
+        Array.from(e.target.files).map((f) =>
+          URL.createObjectURL(f)
+        )
       );
     } else {
       setPreviewUrls([URL.createObjectURL(e.target.files[0])]);
     }
   };
 
-  // Upload submit
+  // upload submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!files || files.length === 0) {
@@ -161,30 +157,30 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(body.error || "Upload failed");
 
       setUploadSuccess("Uploaded successfully!");
-      // reset form
       setTitle("");
       setDescription("");
+      setMediaType("image");
+      setFiles(null);
+      setPreviewUrls([]);
+
+      // reset selects to first category
       const mains = Object.keys(categoriesMap);
       if (mains.length) {
         setMainCategory(mains[0]);
         setSubCategory(categoriesMap[mains[0]][0] || "");
       }
-      setMediaType("image");
-      setFiles(null);
-      setPreviewUrls([]);
 
-      // refresh item list
       await fetchItems();
     } catch (err: unknown) {
       setUploadError(
-        err instanceof Error ? err.message : "Unknown upload error"
+        err instanceof Error ? err.message : "Unknown error"
       );
     } finally {
       setUploading(false);
     }
   };
 
-  // Delete handler for AdminList
+  // delete handler
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this item?")) return;
     try {
@@ -195,9 +191,11 @@ export default function AdminPage() {
         const { error } = await res.json();
         throw new Error(error || `Error ${res.status}`);
       }
-      setItems((prev) => prev.filter((i) => i._id !== id));
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Unknown error");
+      setItems((prev) =>
+        prev.filter((i) => i._id !== id)
+      );
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : "Unknown");
     }
   };
 
@@ -241,9 +239,9 @@ export default function AdminPage() {
       {activeTab === "categories" && (
         <AdminCategories
           categories={categories}
+          loading={categoriesLoading}
           refresh={fetchCategories}
           API_URL={API_URL}
-          loading={categoriesLoading}
         />
       )}
     </div>

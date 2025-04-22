@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 interface PortfolioItem {
   _id: string;
@@ -27,8 +28,7 @@ export default function AdminList({
   if (loading) {
     return <div className="text-center p-4">Loading items...</div>;
   }
-
-  if (items.length === 0) {
+  if (!items.length) {
     return (
       <div className="text-center text-gray-600 p-4">
         No portfolio items found.
@@ -43,29 +43,28 @@ export default function AdminList({
       </h2>
       <div className="divide-y divide-gray-200">
         {items.map((item) => {
-          const thumbnail = item.files[0] || "";
+          const thumb = item.files[0] || "";
           return (
             <div
               key={item._id}
               className="py-4 flex items-center justify-between"
             >
               <div className="flex items-center space-x-4">
-                <div className="w-24 h-24 bg-gray-200 flex-shrink-0 rounded overflow-hidden">
-                  {thumbnail ? (
-                    item.mediaType === "image" ? (
-                      <img
-                        src={thumbnail}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <video
-                        src={thumbnail}
-                        className="w-full h-full object-cover"
-                        muted
-                        controls={false}
-                      />
-                    )
+                <div className="relative w-24 h-24 flex-shrink-0 rounded overflow-hidden bg-gray-200">
+                  {thumb && item.mediaType === "image" ? (
+                    <Image
+                      src={thumb}
+                      alt={item.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : thumb && item.mediaType === "video" ? (
+                    <video
+                      src={thumb}
+                      className="w-full h-full object-cover"
+                      muted
+                      controls={false}
+                    />
                   ) : (
                     <div className="flex items-center justify-center w-full h-full text-gray-500">
                       No preview
@@ -73,7 +72,9 @@ export default function AdminList({
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">{item.title}</h3>
+                  <h3 className="text-lg font-semibold">
+                    {item.title}
+                  </h3>
                   <p className="text-sm text-gray-600">
                     {item.mainCategory} / {item.subCategory}
                   </p>
